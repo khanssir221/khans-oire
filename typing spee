@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Typing Speed Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        #text-display {
+            font-size: 1.4em;
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ccc;
+            line-height: 1.6;
+        }
+        #input-box {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin: 15px 0;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Typing Speed Test</h1>
+    <div id="timer">Time: <span>0</span>s</div>
+    <div id="text-display"></div>
+    <textarea id="input-box" placeholder="Start typing here..."></textarea>
+    <div class="stats">
+        <div>Speed: <span id="speed">0</span> WPM</div>
+        <div>Accuracy: <span id="accuracy">0</span>%</div>
+    </div>
+
+    <script>
+        const sampleText = "The quick brown fox jumps over the lazy dog. This is a common typing test sentence used to measure typing speed and accuracy. Keep practicing to improve your skills!";
+        const textDisplay = document.getElementById('text-display');
+        const inputBox = document.getElementById('input-box');
+        const timerSpan = document.querySelector('#timer span');
+        const speedSpan = document.getElementById('speed');
+        const accuracySpan = document.getElementById('accuracy');
+        
+        let startTime, timerInterval, currentText = [];
+
+        function init() {
+            textDisplay.innerHTML = sampleText.split('').map(char => 
+                `<span>${char}</span>`).join('');
+            inputBox.value = '';
+            currentText = [];
+            clearInterval(timerInterval);
+            timerSpan.textContent = '0';
+            speedSpan.textContent = '0';
+            accuracySpan.textContent = '0';
+        }
+
+        function startTimer() {
+            startTime = new Date();
+            timerInterval = setInterval(() => {
+                timerSpan.textContent = Math.floor((new Date() - startTime) / 1000);
+            }, 1000);
+        }
+
+        function calculateStats() {
+            const timeElapsed = (new Date() - startTime) / 1000 / 60;
+            const wordsTyped = inputBox.value.trim().split(/\s+/).length;
+            const speed = Math.floor(wordsTyped / timeElapsed);
+            const accuracy = Math.floor((currentText.filter(c => c.correct).length / currentText.length) * 100);
+            
+            speedSpan.textContent = speed || 0;
+            accuracySpan.textContent = accuracy || 0;
+        }
+
+        function highlightText() {
+            const chars = textDisplay.querySelectorAll('span');
+            const inputVal = inputBox.value.split('');
+            
+            chars.forEach((char, index) => {
+                if (index < inputVal.length) {
+                    char.classList.add(inputVal[index] === char.innerText ? 'correct' : 'incorrect');
+                    char.classList.remove('highlight');
+                } else if (index === inputVal.length) {
+                    char.classList.add('highlight');
+                } else {
+                    char.className = '';
+                }
+            });
+        }
+
+        inputBox.addEventListener('input', () => {
+            if (!startTime) startTimer();
+            currentText = inputBox.value.split('').map((char, i) => ({
+                char,
+                correct: char === sampleText[i]
+            }));
+            highlightText();
+            calculateStats();
+            
+            if (inputBox.value === sampleText) {
+                clearInterval(timerInterval);
+                inputBox.blur();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
